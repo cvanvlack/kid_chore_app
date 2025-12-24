@@ -9,8 +9,6 @@ function formBody(params: Record<string, string | number | undefined>) {
   return usp
 }
 
-export type Role = 'kid' | 'parent'
-
 export type RequestRow = {
   request_id: string
   created_at: string
@@ -69,18 +67,14 @@ export async function apiReview(args: {
   return res.json()
 }
 
-export async function apiSummary(args: {
-  token: string
-  kid_id?: string
-  limit?: number
-}) {
+export async function apiSummary(args: { token: string; kid_id?: string; limit?: number }) {
   const res = await fetch(CONFIG.API_URL, {
     method: 'POST',
     body: formBody({
       action: 'summary',
       token: args.token,
       kid_id: args.kid_id,
-      limit: args.limit ?? 50,
+      limit: args.limit ?? 80,
     }),
   })
   return res.json() as Promise<{
@@ -91,11 +85,4 @@ export async function apiSummary(args: {
     _status: number
     error?: string
   }>
-}
-
-export async function apiHealth() {
-  const url = new URL(CONFIG.API_URL)
-  url.searchParams.set('action', 'health')
-  const res = await fetch(url.toString())
-  return res.json()
 }
