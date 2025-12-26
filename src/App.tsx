@@ -4,29 +4,46 @@ import SetupPage from './pages/SetupPage'
 import KidPage from './pages/KidPage'
 import ParentPage from './pages/ParentPage'
 
-function requireSetup() {
-  return !!getToken() && !!getRole()
-}
-
 export default function App() {
   return (
     <Routes>
       <Route path="/setup" element={<SetupPage />} />
       <Route
         path="/kid"
-        element={requireSetup() ? <KidPage /> : <Navigate to="/setup" replace />}
+        element={
+          <RequireSetup>
+            <KidPage />
+          </RequireSetup>
+        }
       />
       <Route
         path="/parent"
-        element={requireSetup() ? <ParentPage /> : <Navigate to="/setup" replace />}
+        element={
+          <RequireSetup>
+            <ParentPage />
+          </RequireSetup>
+        }
       />
       <Route
         path="/"
-        element={requireSetup() ? <RoleRedirect /> : <Navigate to="/setup" replace />}
+        element={
+          <RequireSetup>
+            <RoleRedirect />
+          </RequireSetup>
+        }
       />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
+}
+
+function RequireSetup({ children }: { children: React.ReactNode }) {
+  // IMPORTANT: this must run during route render, not at App() render time.
+  // localStorage changes won't re-render App, but they will be reflected here
+  // as soon as the user navigates to a guarded route.
+  const ok = !!getToken() && !!getRole()
+  if (!ok) return <Navigate to="/setup" replace />
+  return <>{children}</>
 }
 
 function RoleRedirect() {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { apiSubmit, apiSummary, RequestRow } from '../api'
+import { apiSubmit, apiSummary, type RequestRow } from '../api'
 import { CONFIG } from '../config'
 import { clearAll, getKidId, getToken } from '../storage'
 

@@ -2,6 +2,7 @@ const KEY = {
   token: 'ledger_token',
   role: 'ledger_role',
   kidId: 'ledger_kid_id',
+  setupUpdatedAt: 'ledger_setup_updated_at',
 } as const
 
 export function getToken() {
@@ -25,8 +26,16 @@ export function setKidId(v: string) {
   localStorage.setItem(KEY.kidId, v)
 }
 
+export function getSetupUpdatedAt() {
+  return localStorage.getItem(KEY.setupUpdatedAt)
+}
+export function setSetupUpdatedAt(v: string) {
+  localStorage.setItem(KEY.setupUpdatedAt, v)
+}
+
 export function clearAll() {
   localStorage.removeItem(KEY.token)
   localStorage.removeItem(KEY.role)
   localStorage.removeItem(KEY.kidId)
+  localStorage.removeItem(KEY.setupUpdatedAt)
 }

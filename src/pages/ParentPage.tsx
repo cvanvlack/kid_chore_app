@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { apiReview, apiSummary, RequestRow } from '../api'
+import { apiReview, apiSummary, type RequestRow } from '../api'
 import { CONFIG } from '../config'
 import { clearAll, getToken } from '../storage'
 
