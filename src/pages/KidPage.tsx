@@ -9,14 +9,22 @@ function nonce() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
+const CHIPS = [
+  { id: 'dishwasher', label: 'Dishwasher', amount: 2.5 },
+  { id: 'laundry', label: 'Laundry', amount: 5.0 },
+  { id: 'snow', label: 'Snow Shovelling', amount: 5.0 },
+  { id: 'dishes', label: 'Wash Dishes', amount: 2.5 },
+]
+
 export default function KidPage() {
   const nav = useNavigate()
   const token = getToken()
   const kidId = getKidId()
   const kidName = useMemo(() => CONFIG.KIDS.find((k) => k.id === kidId)?.name ?? kidId, [kidId])
 
-  const [amount, setAmount] = useState<string>('5')
-  const [description, setDescription] = useState<string>('dishwasher')
+  const [amount, setAmount] = useState<string>('')
+  const [description, setDescription] = useState<string>('')
+  const [selectedChipId, setSelectedChipId] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -103,6 +111,7 @@ export default function KidPage() {
       setStatus('')
       await refresh({ reason: 'afterSubmit', silent: true })
       setDescription('')
+      setSelectedChipId(null)
     } catch (e: any) {
       setError(String(e?.message || e))
     } finally {
@@ -113,10 +122,26 @@ export default function KidPage() {
     }
   }
 
+  function handleChipClick(chip: typeof CHIPS[number]) {
+    if (chip.id === selectedChipId) {
+      // Deselect
+      setSelectedChipId(null)
+      setAmount('')
+      setDescription('')
+    } else {
+      // Select
+      setSelectedChipId(chip.id)
+      setAmount(String(chip.amount))
+      setDescription(chip.label)
+    }
+  }
+
   function logout() {
     clearAll()
     nav('/setup')
   }
+
+  const isManualEntry = (amount !== '' || description !== '') && selectedChipId === null
 
   return (
     <div style={{ maxWidth: 680, margin: '0 auto', padding: 16, fontFamily: 'system-ui' }}>
@@ -164,12 +189,40 @@ export default function KidPage() {
       <section style={{ marginTop: 16, padding: 12, border: '1px solid #ddd', borderRadius: 12 }}>
         <h2 style={{ marginTop: 0 }}>New entry</h2>
 
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+          {CHIPS.map((chip) => {
+            const isSelected = selectedChipId === chip.id
+            const isDisabled = (selectedChipId !== null && !isSelected) || isManualEntry
+            return (
+              <button
+                key={chip.id}
+                onClick={() => handleChipClick(chip)}
+                disabled={isDisabled}
+                style={{
+                  padding: 10,
+                  borderRadius: 8,
+                  border: isSelected ? '2px solid #0055ff' : '1px solid #ddd',
+                  background: isSelected ? '#eef4ff' : '#fff',
+                  color: isSelected ? '#0055ff' : isDisabled ? '#aaa' : '#000',
+                  fontWeight: isSelected ? 700 : 400,
+                  opacity: isDisabled ? 0.5 : 1,
+                  cursor: isDisabled ? 'default' : 'pointer',
+                }}
+              >
+                <div style={{ fontSize: 13 }}>{chip.label}</div>
+                <div style={{ fontSize: 12, opacity: 0.8 }}>${chip.amount.toFixed(2)}</div>
+              </button>
+            )
+          })}
+        </div>
+
         <label style={{ display: 'block', marginTop: 10 }}>
           Amount (use + for earned, - for spent)
           <input
+            disabled={selectedChipId !== null}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            inputMode="decimal"
+            inputMode="text"
             style={{ display: 'block', width: '100%', padding: 10, marginTop: 6 }}
           />
         </label>
@@ -177,6 +230,7 @@ export default function KidPage() {
         <label style={{ display: 'block', marginTop: 10 }}>
           Description
           <input
+            disabled={selectedChipId !== null}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="e.g. dishwasher, spent on pokemon cards"
