@@ -84,11 +84,17 @@ export default function ParentPage() {
       setStatus((s) => (s ? `${s} (still working…)` : 'Still working…'))
     }, 2500)
     try {
-      const resp = await apiReview({ token, request_id, status })
+      const resp = await apiReview({ token, request_id, status, limit: 200 })
       if (!resp.ok) throw new Error(resp.error || 'review failed')
       setSuccess(status === 'approved' ? 'Approved.' : 'Denied.')
       setStatus('')
-      await refresh({ reason: 'afterReview', silent: true })
+      if (resp.recent && resp.balances) {
+        setRecent(resp.recent)
+        setBalances(resp.balances)
+        setLastUpdatedAt(new Date().toISOString())
+      } else {
+        await refresh({ reason: 'afterReview', silent: true })
+      }
     } catch (e: any) {
       setError(String(e?.message || e))
     } finally {

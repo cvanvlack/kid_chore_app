@@ -52,6 +52,8 @@ export async function apiReview(args: {
   status: 'approved' | 'denied'
   review_note?: string
   reviewed_by?: string
+  /** Ask server to include dashboard snapshot (balances + recent); avoids a second summary request. */
+  limit?: number
 }) {
   const res = await fetch(CONFIG.API_URL, {
     method: 'POST',
@@ -62,9 +64,19 @@ export async function apiReview(args: {
       status: args.status,
       review_note: args.review_note,
       reviewed_by: args.reviewed_by,
+      limit: args.limit ?? 200,
     }),
   })
-  return res.json()
+  return res.json() as Promise<{
+    ok: boolean
+    request_id?: string
+    status?: string
+    scope?: string
+    balances?: Record<string, number>
+    recent?: RequestRow[]
+    _status: number
+    error?: string
+  }>
 }
 
 export async function apiSummary(args: { token: string; kid_id?: string; limit?: number }) {

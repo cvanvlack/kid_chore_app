@@ -333,6 +333,16 @@ function computeBalances_(requests) {
   return balances;
 }
 
+/** Used by summary and review so approve/deny can return dashboard data in one request. */
+function summaryPayload_(reqSheet, reqMap, kidScopeOrNull, limit) {
+  const data = readRequests_(reqSheet, reqMap, kidScopeOrNull);
+  const balances = computeBalances_(data);
+  const recent = data
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, limit);
+  return { balances, recent };
+}
+
 // --- Auth ---
 
 /**
